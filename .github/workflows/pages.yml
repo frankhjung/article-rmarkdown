@@ -1,0 +1,51 @@
+---
+name: publish article
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: publish article to pages
+    runs-on: ubuntu-latest
+    env:
+      ARTICLE_TITLE: "Project Title Here"
+      LABELS: "template, test"
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: shallow checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: deploy to pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: publish to blog
+        if: success()
+        uses: docker://ghcr.io/frankhjung/blogspot-publishing:v1
+        with:
+          args: >-
+            --source-file "public/index.html"
+            --title "${{ env.ARTICLE_TITLE }}"
+            --labels "${{ env.LABELS }}"
+            --blog-id "${{ secrets.BLOGGER_BLOG_ID }}"
+            --client-id "${{ secrets.BLOGGER_CLIENT_ID }}"
+            --client-secret "${{ secrets.BLOGGER_CLIENT_SECRET }}"
+            --refresh-token "${{ secrets.BLOGGER_REFRESH_TOKEN }}"

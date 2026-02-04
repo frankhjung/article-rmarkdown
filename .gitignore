@@ -1,0 +1,12 @@
+*~
+cache/
+*.code-workspace
+*.constant
+*.log
+*.random
+.RData
+*.rds
+.Rhistory
+.Rproj.user
+*.trend
+*.zip
