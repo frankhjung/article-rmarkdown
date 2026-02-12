@@ -157,7 +157,7 @@ The pipeline performs the following steps:
    workflow fails with an error.
 2. **Build**: Uses the `ghcr.io/frankhjung/gnur:4.5.2` Docker image to run
    `make.R` with the article source, producing `article.html`.
-3. **Publish**: Uses the `ghcr.io/frankhjung/blogger:v1.2` Docker image to
+3. **Publish**: Uses the `ghcr.io/frankhjung/blogger:v1.3` Docker image to
    upload the generated HTML to Blogger using the provided metadata and secrets.
 
 * **Output:** `article.html` — the HTML file that is published to Blogger.
