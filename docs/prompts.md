@@ -2,7 +2,7 @@
 
 ## Review of README.md
 
-Review [README.md](README.md) to ensure:
+Review [README.md](../README.md) to ensure:
 
 * Only edit the `README.md`
 * It matches code base
