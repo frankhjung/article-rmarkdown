@@ -49,7 +49,7 @@ jobs:
           echo "build=true" >> "$GITHUB_OUTPUT"
 
   build:
-    name: publish ${{ inputs.article_title }}
+    name: build ${{ inputs.article_title }}
     runs-on: ubuntu-latest
     needs: validate
     if: needs.validate.outputs.build == 'true'
@@ -72,14 +72,24 @@ jobs:
           name: article
           path: ${{ inputs.article_name }}/public/article.html
 
+  publish:
+    name: publish ${{ inputs.article_title }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: download article
+        uses: actions/download-artifact@v4
+        with:
+          name: article
+
+      - name: verify artifact
+        run: ls -l article.html
+
       - name: publish to blog
-        if: success()
         uses: docker://ghcr.io/frankhjung/blogger:v1.3
-        env:
-          SOURCE_FILE: ${{ inputs.article_name }}/public/article.html
         with:
           args: >-
-            --source-file "${{ env.SOURCE_FILE }}"
+            --source-file "article.html"
             --title "${{ inputs.article_title }}"
             --labels "${{ inputs.article_labels }}"
             --blog-id "${{ secrets.BLOGGER_BLOG_ID }}"
