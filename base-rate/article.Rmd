@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 require(ggplot2)
 ```
 
-![© Frank H Jung 2026](images/banner.png)
+![© Frank H Jung 2026](images/banner.jpg)
 
 ## COVID-19 Hospitalisations
 
@@ -110,6 +110,8 @@ ggplot(hospital_data, aes(x = Status, y = Rate, fill = Status)) +
 ```
 
 ## The Base Rate Fallacy
+
+![Understanding the Base Rate Fallacy](images/infographic.jpg)
 
 The base rate fallacy occurs when we ignore the base rate (the underlying
 proportion) of a population when evaluating statistics. In this case:
