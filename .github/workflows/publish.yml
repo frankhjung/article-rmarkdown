@@ -63,23 +63,22 @@ jobs:
       - name: build html from rmd
         uses: docker://ghcr.io/frankhjung/gnur:4.5.2
         with:
-          args: >-
-            ${{ inputs.article_name }}/make.R
-            ${{ inputs.article_name }}/article.Rmd
-            ../article.html
+          args: make -B ${{ inputs.article_name }}
 
       - name: archive article
         uses: actions/upload-artifact@v4
         with:
           name: article
-          path: article.html
+          path: ${{ inputs.article_name }}/public/article.html
 
       - name: publish to blog
         if: success()
         uses: docker://ghcr.io/frankhjung/blogger:v1.3
+        env:
+          SOURCE_FILE: ${{ inputs.article_name }}/public/article.html
         with:
           args: >-
-            --source-file "article.html"
+            --source-file "${{ env.SOURCE_FILE }}"
             --title "${{ inputs.article_title }}"
             --labels "${{ inputs.article_labels }}"
             --blog-id "${{ secrets.BLOGGER_BLOG_ID }}"
