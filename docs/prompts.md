@@ -16,7 +16,7 @@ Use GitHub pipeline (use <https://raw.githubusercontent.com/frankhjung/article-r
 
 ## Review requirements.md
 
-Review [requirements.md](docs/requirements.md) to ensure:
+Review [requirements.md](requirements.md) to ensure:
 
 * Only edit `docs/requirements.md`
 * It matches code base
