@@ -49,7 +49,7 @@ jobs:
           echo "build=true" >> "$GITHUB_OUTPUT"
 
   build:
-    name: build ${{ inputs.article_title }}
+    name: build ${{ inputs.article_name }}
     runs-on: ubuntu-latest
     needs: validate
     if: needs.validate.outputs.build == 'true'
@@ -76,6 +76,7 @@ jobs:
     name: publish ${{ inputs.article_title }}
     runs-on: ubuntu-latest
     needs: build
+
     steps:
       - name: download article
         uses: actions/download-artifact@v4

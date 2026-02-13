@@ -1,13 +1,79 @@
-# Rmarkdown Articles
+# R Markdown Articles
 
 A reusable project for authoring, building, and publishing
 [R Markdown](https://rmarkdown.rstudio.com/) articles to
 [Blogger](https://www.blogger.com/).
 
-Each article lives in its own subfolder and shares a common
-build configuration. A single GitHub Actions workflow builds
-any article on demand and publishes the resulting HTML to
-Blogger.
+Each article lives in its own subfolder and shares a common build configuration.
+A single GitHub Actions workflow builds any article on demand and publishes the
+resulting HTML to Blogger.
+
+## Pipeline Overview
+
+The publishing pipeline is automated using GitHub Actions and consists of three
+sequential jobs:
+
+1. **Validate**: Checks that all required inputs (article name, title, and
+   labels) are present.
+2. **Build**: Compiles the R Markdown source into HTML using GNU R and uploads
+   the result as an artifact.
+3. **Publish**: Downloads the HTML artifact and publishes it to Blogger using
+   the Google Blogger API.
+
+```mermaid
+graph LR
+    %% Trigger
+    Start(("User Trigger<br/>(workflow_dispatch)")) --> ValidateJob
+
+    %% Job: Validate
+    subgraph ValidateJob ["Job: Validate Inputs"]
+        direction LR
+        InputLogic{"Check Inputs:<br/>Name, Title, Labels"}
+
+        InputLogic -- "All Empty" --> OutputSkip["Output: build=false"]
+        InputLogic -- "Partial / Missing" --> ExitFail["Exit 1 (Fail)"]
+        InputLogic -- "All Provided" --> OutputBuild["Output: build=true"]
+    end
+
+   %% Conditional Logic between Jobs
+    OutputSkip -.-> EndSkip([End: Skipped])
+    ExitFail --> EndFail([End: Failed])
+   OutputBuild ==>|build=true| StepCheckout
+
+      %% Job: Build
+      subgraph BuildJob ["Job: Build"]
+        direction LR
+
+        StepCheckout[/"Step: Checkout Code<br/>(actions/checkout)"/]
+        StepGNUR["Step: Build HTML<br/>(frankhjung/gnur)"]
+        StepUpload[/"Step: Upload Artifact<br/>(actions/upload-artifact)"/]
+
+        StepCheckout --> StepGNUR
+        StepGNUR --> StepUpload
+    end
+
+    %% Job: Publish
+    subgraph PublishJob ["Job: Publish"]
+        direction LR
+        StepDownload[/"Step: Download Artifact<br/>(actions/download-artifact)"/]
+        StepBlogger["Step: Publish to Blogger<br/>(frankhjung/blogger)"]
+
+        StepDownload --> StepBlogger
+    end
+
+    %% End State
+    StepUpload ==> StepDownload
+    StepBlogger --> EndSuccess((End: Success))
+
+    %% Styling
+    classDef green fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef red fill:#ffebee,stroke:#b71c1c,stroke-width:2px;
+    classDef yellow fill:#fffde7,stroke:#fbc02d,stroke-width:2px;
+
+    class Start,EndSuccess green;
+    class EndFail red;
+    class EndSkip yellow;
+```
 
 ## Project Structure
 
@@ -40,14 +106,11 @@ rmarkdown/
 ## Prerequisites
 
 - [R](https://www.r-project.org/) (version 4.0+)
-- R packages: `rmarkdown`, `knitr`, `ggplot2`, and others
-  (see `files/make.R` and article `Rmd` files for the
-  full list)
+- R packages: `rmarkdown`, `knitr`, `ggplot2`, and others (see `files/make.R`
+  and article `Rmd` files for the full list)
 - [GNU Make](https://www.gnu.org/software/make/)
-- [pandoc](https://pandoc.org/) (bundled with RStudio or
-  install separately)
-- [Docker](https://www.docker.com/) (optional, for
-  containerised builds)
+- [pandoc](https://pandoc.org/) (bundled with RStudio or install separately)
+- [Docker](https://www.docker.com/) (optional, for containerised builds)
 
 ### Installing R Packages
 
@@ -65,8 +128,7 @@ install.packages(c(
 make new-article article_name=my-article
 ```
 
-This scaffolds a new article folder with all required files
-and links.
+This scaffolds a new article folder with all required files and links.
 
 ## Building Locally
 
@@ -84,14 +146,12 @@ make base-rate-clean
 make clean
 ```
 
-Build output is written to
-`<article_name>/public/article.html`.
+Build output is written to `<article_name>/public/article.html`.
 
 ## Docker Run
 
-This project uses a pre-built GNU R image from GHCR. There
-is no local `Dockerfile`; instead, pull and run the image
-directly.
+This project uses a pre-built GNU R image from GHCR. There is no local
+`Dockerfile`; instead, pull and run the image directly.
 
 ### Run from GHCR
 
@@ -115,10 +175,8 @@ docker run --rm \
 
 ## Publishing via GitHub Actions
 
-The
-[publish.yml](.github/workflows/publish.yml)
-workflow is triggered manually via `workflow_dispatch` with
-three inputs:
+The [publish.yml](.github/workflows/publish.yml) workflow is triggered manually
+via `workflow_dispatch` with three inputs:
 
 | Input | Description |
 | :---- | :---------- |
@@ -126,12 +184,10 @@ three inputs:
 | `article_title` | Post title as it appears on Blogger |
 | `article_labels` | Comma-separated labels for the post |
 
-The workflow validates inputs, builds the article inside a
-Docker container using the
-[gnur](https://ghcr.io/frankhjung/gnur) image, and
-publishes the resulting HTML to Blogger using the
-[blogger](https://github.com/frankhjung/docker-blogger)
-image.
+The workflow validates inputs, builds the article inside a Docker container
+using the [gnur](https://ghcr.io/frankhjung/gnur) image, and publishes the
+resulting HTML to Blogger using the
+[blogger](https://github.com/frankhjung/docker-blogger) image.
 
 ### Required Secrets
 
